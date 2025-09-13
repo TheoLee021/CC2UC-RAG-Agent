@@ -76,16 +76,31 @@ class AssistScraper:
                             or_choices.append(and_group_builder)
                             and_group_builder = []
 
+                # Add any remaining AND group
                 if and_group_builder:
                     or_choices.append(and_group_builder)
 
+                # If no OR choices, skip this block
                 if not or_choices:
                     continue
 
+                # Build the final logic structure
+                # Example: { "type": "OR", "course_groups": [ [{courseA}], [{courseB}, {courseC}] ] }
+                # Outside the list is the OR logic, inside the list is the AND logic implicitly
                 final_logic_structure = {"type": "OR", "course_groups": or_choices}
 
                 req_id = f"{uc_key}-req-{req_index:02d}"
                 req_index += 1
+
+                existing_reqs = [req['req_id'] for req in self.normalized_data["uc_requirements"].get(uc_key, [])]
+                if req_id not in existing_reqs:
+                    self.normalized_data["uc_requirements"][uc_key].append({
+                        "req_id": req_id,
+                        "uc_course_name": uc_requirement_name,
+                        "uc_course_code": uc_course_code,
+                    })
+
+                self.normalized_data["articulations"][cc_name][req_id] = final_logic_structure
 
             except (AttributeError, IndexError, TypeError) as e:
                 print(f"    - Skipping a block for {cc_name} to {uc_name} due to parsing error: {e}")
