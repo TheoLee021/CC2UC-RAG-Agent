@@ -65,6 +65,7 @@ class AssistScraper:
                 or_choices = []
                 and_group_builder = []
 
+                # Parse the receiving div
                 for element in receiving_div.find_all(recursive=False):
                     if 'courseLine' in element.get('class', []):
                         course_data = self.parse_agreement_page(element)
